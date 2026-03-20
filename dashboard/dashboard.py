@@ -19,13 +19,13 @@ st.set_page_config(
 # ─────────────────────────────────────────────
 @st.cache_data
 def load_data():
-    df = pd.read_csv("dashboard/main_data.csv")
+    df = pd.read_csv("main_data.csv")
     df['dteday'] = pd.to_datetime(df['dteday'])
     return df
 
 @st.cache_data
 def load_hour():
-    df = pd.read_csv("data/hour.csv")
+    df = pd.read_csv("hour.csv")
     df['dteday'] = pd.to_datetime(df['dteday'])
     season_map = {1:'Spring',2:'Summer',3:'Fall',4:'Winter'}
     yr_map     = {0:2011,1:2012}
