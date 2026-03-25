@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -19,12 +18,22 @@ st.set_page_config(
 # ─────────────────────────────────────────────
 @st.cache_data
 def load_day_data():
+    """
+    Memuat dan memproses dataset harian (day.csv).
+    Mengkonversi kolom tanggal ke tipe datetime.
+    Returns: DataFrame berisi data peminjaman sepeda harian.
+    """
     df = pd.read_csv("main_data.csv")
     df['dteday'] = pd.to_datetime(df['dteday'])
     return df
 
 @st.cache_data
 def load_hour_data():
+    """
+    Memuat dan memproses dataset per jam (hour.csv).
+    Menambahkan kolom label musim dan tahun.
+    Returns: DataFrame berisi data peminjaman sepeda per jam.
+    """
     df = pd.read_csv("hour.csv")
     df['dteday'] = pd.to_datetime(df['dteday'])
     season_map = {1: 'Spring', 2: 'Summer', 3: 'Fall', 4: 'Winter'}
@@ -42,7 +51,6 @@ hour_df = load_hour_data()
 st.sidebar.title("🔍 Filter Data")
 st.sidebar.markdown("Sesuaikan tampilan dashboard menggunakan filter di bawah ini.")
 
-# Filter Tanggal
 st.sidebar.subheader("📅 Rentang Tanggal")
 min_date = day_df['dteday'].min().date()
 max_date = day_df['dteday'].max().date()
@@ -50,7 +58,6 @@ max_date = day_df['dteday'].max().date()
 start_date = st.sidebar.date_input("Tanggal Mulai", value=min_date, min_value=min_date, max_value=max_date)
 end_date   = st.sidebar.date_input("Tanggal Akhir", value=max_date, min_value=min_date, max_value=max_date)
 
-# Filter Musim
 st.sidebar.subheader("🌤️ Musim & Cuaca")
 season_options  = ['All Season', 'Spring', 'Summer', 'Fall', 'Winter']
 selected_season = st.sidebar.selectbox("Musim", season_options)
@@ -92,10 +99,7 @@ except Exception as e:
 # Header
 # ─────────────────────────────────────────────
 st.title("🚲 Bike Sharing Dashboard")
-st.markdown(
-    "Dashboard ini menyajikan analisis interaktif data peminjaman sepeda "
-    "dari sistem **Capital Bikeshare**, Washington D.C., tahun **2011–2012**."
-)
+st.markdown("Dashboard ini menyajikan analisis interaktif data peminjaman sepeda dari sistem **Capital Bikeshare**, Washington D.C., tahun **2011–2012**.")
 st.markdown("---")
 
 # ─────────────────────────────────────────────
@@ -158,11 +162,7 @@ with col_right:
     fig2.update_layout(title_font_size=13, coloraxis_showscale=False)
     st.plotly_chart(fig2, use_container_width=True)
 
-st.info(
-    "**Insight:** Peminjaman tertinggi terjadi saat musim **Fall** dengan cuaca **cerah**, "
-    "sedangkan terendah pada musim **Spring** dengan **hujan/salju**. "
-    "Cuaca cerah secara konsisten meningkatkan jumlah peminjaman di semua musim."
-)
+st.info("**Insight:** Peminjaman tertinggi terjadi saat musim **Fall** dengan cuaca **cerah**, sedangkan terendah pada musim **Spring** dengan **hujan/salju**. Cuaca cerah secara konsisten meningkatkan jumlah peminjaman di semua musim.")
 st.markdown("---")
 
 # ─────────────────────────────────────────────
@@ -182,15 +182,12 @@ try:
     fig3 = make_subplots(rows=2, cols=1, shared_xaxes=True,
                          subplot_titles=('Hari Kerja (Senin-Jumat)', 'Hari Libur & Akhir Pekan'))
 
-    # Hari kerja
     fig3.add_trace(go.Scatter(x=workday['hr'], y=workday['casual'],
                               name='Kasual (Kerja)', line=dict(color='#1565C0', width=2.5),
                               mode='lines+markers', marker=dict(size=4)), row=1, col=1)
     fig3.add_trace(go.Scatter(x=workday['hr'], y=workday['registered'],
                               name='Terdaftar (Kerja)', line=dict(color='#42A5F5', width=2.5),
                               mode='lines+markers', marker=dict(size=4)), row=1, col=1)
-
-    # Hari libur
     fig3.add_trace(go.Scatter(x=holiday['hr'], y=holiday['casual'],
                               name='Kasual (Libur)', line=dict(color='#1565C0', width=2.5, dash='dash'),
                               mode='lines+markers', marker=dict(size=4)), row=2, col=1)
@@ -198,25 +195,16 @@ try:
                               name='Terdaftar (Libur)', line=dict(color='#42A5F5', width=2.5, dash='dash'),
                               mode='lines+markers', marker=dict(size=4)), row=2, col=1)
 
-    fig3.update_layout(
-        title='Pola Aktivitas Per Jam: Kasual vs. Terdaftar',
-        title_font_size=13,
-        height=550,
-        hovermode='x unified'
-    )
+    fig3.update_layout(title='Pola Aktivitas Per Jam: Kasual vs. Terdaftar',
+                       title_font_size=13, height=550, hovermode='x unified')
     fig3.update_xaxes(title_text='Jam', tickmode='linear', tick0=0, dtick=2, row=2, col=1)
     fig3.update_yaxes(title_text='Rata-rata Peminjaman')
-
     st.plotly_chart(fig3, use_container_width=True)
 
 except Exception as e:
     st.warning(f"Data per jam tidak dapat dimuat: {e}")
 
-st.info(
-    "**Insight:** Pengguna **terdaftar** pada hari kerja memiliki pola bimodal (08:00 & 17:00) — "
-    "mencerminkan perjalanan komuter. Di hari libur, polanya bergeser ke siang hari seperti "
-    "pengguna **kasual**, menandakan penggunaan rekreatif."
-)
+st.info("**Insight:** Pengguna **terdaftar** pada hari kerja memiliki pola bimodal (08:00 & 17:00) — mencerminkan perjalanan komuter. Di hari libur, polanya bergeser ke siang hari seperti pengguna **kasual**, menandakan penggunaan rekreatif.")
 st.markdown("---")
 
 # ─────────────────────────────────────────────
@@ -228,6 +216,11 @@ q1 = day_df['cnt'].quantile(0.25)
 q3 = day_df['cnt'].quantile(0.75)
 
 def usage_cluster(cnt):
+    """
+    Mengelompokkan hari berdasarkan intensitas penggunaan sepeda.
+    Args: cnt (int): jumlah peminjaman sepeda dalam satu hari.
+    Returns: str: label cluster ('Rendah', 'Sedang', atau 'Tinggi').
+    """
     if cnt < q1:   return 'Rendah'
     elif cnt < q3: return 'Sedang'
     else:          return 'Tinggi'
@@ -242,40 +235,21 @@ col_a, col_b = st.columns(2)
 with col_a:
     cluster_count = filtered_df['usage_cluster'].value_counts().reindex(cluster_order).fillna(0).reset_index()
     cluster_count.columns = ['Cluster', 'Jumlah']
-
-    fig4 = px.pie(
-        cluster_count,
-        names='Cluster',
-        values='Jumlah',
-        title='Proporsi Hari per Cluster',
-        color='Cluster',
-        color_discrete_map=cluster_colors,
-        hole=0.3
-    )
+    fig4 = px.pie(cluster_count, names='Cluster', values='Jumlah',
+                  title='Proporsi Hari per Cluster', color='Cluster',
+                  color_discrete_map=cluster_colors, hole=0.3)
     fig4.update_layout(title_font_size=13)
     st.plotly_chart(fig4, use_container_width=True)
 
 with col_b:
     cp = filtered_df.groupby('usage_cluster')['temp_c'].mean().reindex(cluster_order).fillna(0).reset_index()
     cp.columns = ['Cluster', 'Suhu']
-
-    fig5 = px.bar(
-        cp,
-        x='Cluster',
-        y='Suhu',
-        title='Rata-rata Suhu per Cluster',
-        color='Cluster',
-        color_discrete_map=cluster_colors,
-        text='Suhu'
-    )
+    fig5 = px.bar(cp, x='Cluster', y='Suhu', title='Rata-rata Suhu per Cluster',
+                  color='Cluster', color_discrete_map=cluster_colors, text='Suhu')
     fig5.update_traces(texttemplate='%{text:.1f}°C', textposition='inside')
     fig5.update_layout(title_font_size=13, showlegend=False)
     st.plotly_chart(fig5, use_container_width=True)
 
-st.info(
-    "**Insight:** Cluster **Tinggi** berkorelasi kuat dengan suhu hangat dan musim gugur/panas. "
-    "Cluster **Rendah** dominan di musim semi/dingin dengan suhu rendah. "
-    "Informasi ini berguna untuk perencanaan armada sepeda berdasarkan kondisi cuaca."
-)
+st.info("**Insight:** Cluster **Tinggi** berkorelasi kuat dengan suhu hangat dan musim gugur/panas. Cluster **Rendah** dominan di musim semi/dingin dengan suhu rendah.")
 st.markdown("---")
 st.caption("Proyek Analisis Data | Bike Sharing Dataset | Capital Bikeshare Washington D.C. 2011-2012")
