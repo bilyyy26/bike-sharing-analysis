@@ -167,3 +167,4 @@ try:
     st.plotly_chart(fig3, use_container_width=True)
 
 except Exception as e:
+    st.warning(f"Data per jam tidak dapat dimuat: {e}")
