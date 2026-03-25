@@ -166,4 +166,4 @@ try:
     fig3.update_yaxes(title_text='Rata-rata Peminjaman')
     st.plotly_chart(fig3, use_container_width=True)
 
-except Exception
+except Exception as e:
